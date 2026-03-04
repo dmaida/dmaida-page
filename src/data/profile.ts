@@ -1,0 +1,26 @@
+export const profile = {
+  name: "Daniel Maida",
+  title: "Software Engineer",
+  bio: "Software Engineer with 7+ years of experience designing and building distributed systems, scalable backend services, and cloud-native applications. Currently at Amazon, building high-throughput routing systems processing 1B+ events per month across 22+ global marketplaces.",
+  skills: [
+    "Java",
+    "Python",
+    "TypeScript",
+    "React",
+    "AWS",
+    "AWS CDK",
+    "Docker",
+    "ECS",
+    "Lambda",
+    "DynamoDB",
+    "PostgreSQL",
+    "OpenTelemetry",
+    "Microservices",
+    "CI/CD",
+    "Linux",
+  ],
+  social: {
+    github: "https://github.com/dmaida",
+    linkedin: "https://linkedin.com/in/daniel-maida",
+  },
+};
