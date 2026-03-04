@@ -1,0 +1,87 @@
+---
+title: "The Tool That Made Me Actually Enjoy Reading Diffs"
+date: "2026-03-04"
+description: ""
+tags: ["diff-so-fancy", "tooling", "cli"]
+slug: "diff-so-fancy"
+---
+
+# The Tool That Made Me *Actually Enjoy* Reading Diffs
+
+Be honest. When was the last time you looked at a raw `git diff` and thought, *"ah yes, perfectly legible"*? If you're like me, you've spent years squinting at walls of `+` and `-` symbols, mentally filtering noise just to figure out what actually changed in a three-line function.
+
+Then I found **diff-so-fancy**, and I genuinely haven't gone back.
+
+---
+
+## What's Wrong With Vanilla Diffs?
+
+Nothing is technically *wrong* with the default `git diff` output — it's just optimized for machines, not humans. The raw format dumps file headers with cryptic metadata, buries changed content in a sea of unchanged context lines, and highlights nothing. You have to do all the cognitive work yourself.
+
+Here's a taste of what the same diff looks like after piping through `diff-so-fancy`. Instead of a `@@ -12,7 +12,7 @@` hunk marker and a wall of symbols, you get a clean filename banner, simplified hunk headers, and — crucially — **word-level highlighting** showing exactly which characters changed on each line.
+
+<figure className="my-6">
+  <img src="https://raw.githubusercontent.com/so-fancy/diff-so-fancy/next/diff-so-fancy.png" alt="diff-so-fancy example output showing word-level highlighting" className="w-full rounded-lg" />
+  <figcaption className="mt-2 text-center text-sm text-zinc-500">
+    Image from the <a href="https://github.com/so-fancy/diff-so-fancy" className="underline hover:text-zinc-300">diff-so-fancy</a> repository by <a href="https://github.com/so-fancy" className="underline hover:text-zinc-300">so-fancy</a> — MIT License
+  </figcaption>
+</figure>
+
+See how instantly the eye goes to what changed? That inline word-level highlighting is the killer feature — instead of knowing a line changed, you know *exactly which characters* changed. For a one-word swap buried inside a long line, that's a genuine game changer.
+
+---
+
+## What It Actually Does
+
+`diff-so-fancy` is a Perl script (also available via npm or Homebrew) that acts as a post-processor for git's diff output. It makes three core improvements:
+
+**Cleaner file headers.** Instead of the verbose `diff --git a/foo b/foo index abc..def 100644` block, you get a clean, readable filename banner. The noise disappears.
+
+**Simplified hunk markers.** Those `@@ -12,7 +12,7 @@` chunks get reformatted into something a human might actually parse at a glance.
+
+**Word-level diff highlighting.** This is the crown jewel. Within changed lines, the exact words or characters that differ are highlighted inline. This alone makes it worth installing.
+
+> *"diff-so-fancy strives to make your diffs human readable instead of machine readable. This helps improve code quality and helps you spot defects faster."*
+> — [diff-so-fancy README](https://github.com/so-fancy/diff-so-fancy)
+
+---
+
+## Setup Takes 60 Seconds
+
+Install via Homebrew (or npm if you prefer), then wire it up as git's global pager:
+
+```bash
+# Install
+brew install diff-so-fancy
+
+# Hook it into git globally
+git config --global core.pager "diff-so-fancy | less --tabs=4 -RF"
+git config --global interactive.diffFilter "diff-so-fancy --patch"
+
+# That's it. Run any diff and enjoy.
+git diff
+```
+
+After that, every `git diff`, `git show`, and `git log -p` flows through it automatically. You don't change your workflow at all — the output just gets better.
+
+---
+
+## Why It Matters Beyond Aesthetics
+
+There's a real productivity argument here, not just an aesthetic one. Cognitive load adds up. Every second your brain spends parsing formatting syntax is a second it's not spending on *understanding the change itself*. Over dozens of code reviews a week, that friction compounds.
+
+I've caught more bugs since installing this tool — not because it adds any analysis, but because I actually **read** my diffs now instead of scanning them. The bar to doing a careful review dropped to zero.
+
+It also has solid alternatives if you want to explore the space: [Delta](https://github.com/dandavison/delta) (written in Rust, with syntax highlighting and side-by-side view) is worth a look if you want more power. But for drop-in simplicity and zero-config elegance, `diff-so-fancy` remains my daily driver.
+
+---
+
+## Just Try It
+
+It's a one-minute install, it's open source with nearly **18,000 GitHub stars**, and it has no downside. If you spend any meaningful time looking at diffs — and you do — this is one of the highest-ROI tools you can add to your environment today.
+
+Your future self, staring down a 300-line PR at 4pm on a Friday, will thank you.
+
+---
+
+*→ [github.com/so-fancy/diff-so-fancy](https://github.com/so-fancy/diff-so-fancy)*
