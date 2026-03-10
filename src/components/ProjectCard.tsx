@@ -1,3 +1,5 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { Project } from "@/data/projects";
 
 export default function ProjectCard({ project }: { project: Project }) {
@@ -21,8 +23,9 @@ export default function ProjectCard({ project }: { project: Project }) {
             href={project.github}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-zinc-400 underline-offset-2 hover:text-white hover:underline"
+            className="flex items-center gap-1.5 text-xs text-zinc-400 underline-offset-2 hover:text-white hover:underline"
           >
+            <FontAwesomeIcon icon={faGithub} className="size-3" />
             GitHub
           </a>
         )}
