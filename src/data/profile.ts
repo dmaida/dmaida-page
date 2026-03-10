@@ -1,5 +1,6 @@
 export const profile = {
   name: "Daniel Maida",
+  avatar: "https://avatars.githubusercontent.com/u/17747777?v=4",
   title: "Software Engineer",
   bio: "Software Engineer with 7+ years of experience designing and building distributed systems, scalable backend services, and cloud-native applications. Currently at Amazon, building high-throughput routing systems processing 1B+ events per month across 22+ global marketplaces.",
   skills: [
