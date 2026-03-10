@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLinkedin } from "@fortawesome/free-brands-svg-icons";
 import { profile } from "@/data/profile";
 
 export default function Home() {
@@ -21,6 +23,15 @@ export default function Home() {
           className="rounded-lg border border-zinc-700 px-6 py-2.5 text-sm font-semibold text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
         >
           Get in Touch
+        </Link>
+        <Link
+          href={profile.social.linkedin}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 rounded-lg border border-zinc-700 px-6 py-2.5 text-sm font-semibold text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
+        >
+          <FontAwesomeIcon icon={faLinkedin} className="size-4" />
+          LinkedIn
         </Link>
       </div>
     </section>
