@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLinkedin } from "@fortawesome/free-brands-svg-icons";
@@ -6,6 +7,14 @@ import { profile } from "@/data/profile";
 export default function Home() {
   return (
     <section className="flex min-h-[calc(100vh-10rem)] flex-col items-center justify-center gap-6 text-center">
+      <Image
+        src={profile.avatar}
+        alt={profile.name}
+        width={250}
+        height={250}
+        className="rounded-full ring-2 ring-zinc-700"
+        priority
+      />
       <h1 className="text-5xl font-bold tracking-tight text-white sm:text-6xl">
         {profile.name}
       </h1>
