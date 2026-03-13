@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import rehypePrettyCode from "rehype-pretty-code";
+import remarkGfm from "remark-gfm";
 import { getPostBySlug, getAllSlugs } from "@/lib/posts";
 import { mdxComponents } from "@/components/mdx/MdxComponents";
 import Link from "next/link";
@@ -60,6 +61,7 @@ export default async function PostPage({
         components={mdxComponents}
         options={{
           mdxOptions: {
+            remarkPlugins: [remarkGfm],
             rehypePlugins: [
               [
                 rehypePrettyCode,

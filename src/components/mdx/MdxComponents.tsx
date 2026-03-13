@@ -48,4 +48,16 @@ export const mdxComponents: MDXComponents = {
     />
   ),
   hr: () => <hr className="my-8 border-zinc-800" />,
+  table: (props) => (
+    <div className="my-6 overflow-x-auto">
+      <table className="w-full border-collapse text-sm text-zinc-300" {...props} />
+    </div>
+  ),
+  thead: (props) => <thead className="border-b border-zinc-700" {...props} />,
+  tbody: (props) => <tbody {...props} />,
+  tr: (props) => <tr className="border-b border-zinc-800" {...props} />,
+  th: (props) => (
+    <th className="px-4 py-2 text-left font-semibold text-white" {...props} />
+  ),
+  td: (props) => <td className="px-4 py-2" {...props} />,
 };
