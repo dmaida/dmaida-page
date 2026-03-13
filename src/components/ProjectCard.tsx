@@ -36,7 +36,7 @@ export default function ProjectCard({ project }: { project: Project }) {
             rel="noopener noreferrer"
             className="text-xs text-zinc-400 underline-offset-2 hover:text-white hover:underline"
           >
-            Live Demo
+            Live Site
           </a>
         )}
       </div>
