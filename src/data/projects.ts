@@ -4,6 +4,7 @@ export interface Project {
   tech: string[];
   url?: string;
   github?: string;
+  featured?: boolean;
 }
 
 export const projects: Project[] = [
@@ -27,6 +28,7 @@ export const projects: Project[] = [
     tech: ["Next.js", "TypeScript", "next-intl", "CSS Modules", "Docker"],
     github: "https://github.com/dmaida/j_a_beautiful_events",
     url: "https://jandabeautifulevents.com/",
+    featured: true,
   },
   {
     title: "NIC Performance Dashboard",
