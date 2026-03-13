@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# dmaida-page
 
-## Getting Started
+Personal portfolio and blog for Daniel Maida — built with Next.js 16, TypeScript, and Tailwind CSS v4. Self-hosted via Docker on Unraid behind Nginx Proxy Manager.
 
-First, run the development server:
+## Stack
+
+- **Framework:** Next.js 16.1 (App Router, Turbopack)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS v4
+- **Blog:** MDX via `next-mdx-remote`, syntax highlighting with `rehype-pretty-code` + Shiki
+- **Deployment:** Docker (standalone build), self-hosted on Unraid
+
+## Pages
+
+| Route | Description |
+|-------|-------------|
+| `/` | Landing page with bio and CTAs |
+| `/about` | Experience, education, and skills |
+| `/projects` | Featured and grid project listing |
+| `/blog` | MDX blog with tag filtering |
+| `/contact` | Contact form with server-side validation |
+
+## Local Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Updating Content
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Profile / skills / social links** — edit `src/data/profile.ts`
 
-## Learn More
+**Projects** — edit `src/data/projects.ts`
 
-To learn more about Next.js, take a look at the following resources:
+**Blog posts** — add `.mdx` files to `content/posts/` with the following frontmatter:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```mdx
+---
+title: Post Title
+date: 2026-03-12
+description: A short description.
+tags: [tag1, tag2]
+slug: post-title
+---
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The `slug` must match the filename (without `.mdx`).
 
-## Deploy on Vercel
+## Docker Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+docker-compose up --build -d
+```
