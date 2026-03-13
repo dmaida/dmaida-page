@@ -1,0 +1,197 @@
+---
+title: "uv: The Python Toolchain You Didn't Know You Were Missing"
+date: "2026-03-13"
+description: "A blazing-fast Python package and project manager written in Rust that replaces pip, venv, pyenv, and more — all in one tool."
+tags: ["python", "tooling", "uv", "productivity"]
+slug: "uv"
+---
+
+# uv: The Python Toolchain You Didn't Know You Were Missing
+
+Python tooling has always been a bit of a mess. You need `pyenv` to manage Python versions, `venv` to create virtual environments, `pip` to install packages, and maybe `pip-tools` or `poetry` to handle lockfiles. Each tool does one thing, and wiring them together is your problem.
+
+**uv** is built by [Astral](https://astral.sh) — the same team behind `ruff` — and it replaces the whole stack. It's written in Rust, and it's fast. Not "slightly faster" fast. We're talking 10–100x faster than pip for installs. The kind of fast that makes you stop noticing the spinner.
+
+---
+
+## Installation
+
+```bash
+# macOS / Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Or via Homebrew
+brew install uv
+```
+
+That's it. No PATH gymnastics, no separate shims layer. uv installs a single binary and you're done.
+
+---
+
+## Python Version Management
+
+One of the first things that hooked me: uv manages Python versions too. No more `pyenv`.
+
+```bash
+# See what's available and what's installed
+uv python list
+
+# Install a specific version
+uv python install 3.13
+
+# Set it as the default (creates a `python` symlink in ~/.local/bin)
+uv python install --default 3.13
+
+# Pin a version for your current project
+uv python pin 3.13
+
+# Show what Python is active
+uv python find
+```
+
+The `--default` flag is a small thing that saves a recurring headache. By default, uv installs versioned binaries like `python3.13` but doesn't create a plain `python` symlink. Pass `--default` and it handles that for you.
+
+> If you're getting `python: command not found` after installing Python with uv, check that `~/.local/bin` is on your `PATH`:
+>
+> ```bash
+> export PATH="$HOME/.local/bin:$PATH"
+> ```
+>
+> Add that to your `~/.zshrc` or `~/.bashrc` and you're set.
+
+---
+
+## Starting a New Project
+
+```bash
+uv init my-project
+cd my-project
+
+# Or pin to a specific Python version from the start
+uv init my-project --python 3.13
+```
+
+This gives you a `pyproject.toml`, a `uv.lock`, and a `.venv` — everything ready to go. Compare that to the old workflow of `python -m venv .venv && source .venv/bin/activate && pip install ...` and you start to see why people make the switch.
+
+---
+
+## Virtual Environments
+
+uv creates `.venv` by default, and you can keep using `source .venv/bin/activate` if you want. But most of the time you won't need to — `uv run` handles it for you.
+
+```bash
+# Create a venv
+uv venv
+
+# With a specific Python version
+uv venv --python 3.13
+
+# Activate the traditional way if needed
+source .venv/bin/activate
+```
+
+---
+
+## Package Management
+
+This is where uv shines day-to-day. Adding and removing dependencies is instant, and everything stays in sync with your lockfile automatically.
+
+```bash
+# Add a dependency (updates pyproject.toml and uv.lock)
+uv add requests
+
+# Add a dev-only dependency
+uv add --dev pytest
+
+# Remove a dependency
+uv remove requests
+
+# Install everything from pyproject.toml / uv.lock
+uv sync
+
+# Include dev dependencies
+uv sync --dev
+```
+
+`uv sync` is the command you'll run after cloning a repo. It reads `uv.lock` and gets the environment exactly right — no surprises.
+
+---
+
+## Running Commands Without Activating
+
+This is the workflow shift I appreciate most. You don't have to activate the venv; just prefix with `uv run`.
+
+```bash
+# Run a script in the project's environment
+uv run python script.py
+
+# Run a one-off tool without installing it permanently
+uvx ruff check .
+uvx black .
+```
+
+`uvx` is like `npx` for Python. It downloads and runs a tool in a temporary environment, so you get the tool without polluting your project's dependencies.
+
+---
+
+## pip-Compatible Interface
+
+Already have a project using `requirements.txt`? uv has you covered with a drop-in `pip`-compatible interface.
+
+```bash
+# Install packages the pip way
+uv pip install requests
+
+# Install from requirements.txt
+uv pip install -r requirements.txt
+
+# Freeze installed packages to a file
+uv pip freeze > requirements.txt
+
+# List installed packages
+uv pip list
+```
+
+You can migrate an existing project incrementally without rewriting anything.
+
+---
+
+## Lockfiles and Reproducibility
+
+uv generates a `uv.lock` file that pins every dependency and transitive dependency. This is what makes `uv sync` reliable across machines.
+
+```bash
+# Regenerate the lockfile
+uv lock
+
+# Sync exactly to the lockfile — fail if anything would change
+uv sync --frozen
+```
+
+`--frozen` is useful in CI. If someone forgot to commit an updated lockfile, the build fails loudly instead of silently installing a different version than you tested with.
+
+---
+
+## Quick Reference
+
+| Command | What it does |
+|---|---|
+| `uv python install 3.13` | Install Python 3.13 |
+| `uv init my-project` | Create a new project |
+| `uv add requests` | Add a dependency |
+| `uv add --dev pytest` | Add a dev dependency |
+| `uv sync` | Install all dependencies |
+| `uv run python script.py` | Run without activating venv |
+| `uvx ruff check .` | Run a tool ephemerally |
+| `uv sync --frozen` | CI-safe exact sync |
+
+---
+
+## Worth the Switch?
+
+If you're working on new Python projects, the answer is yes. The speed alone is worth it, but the real value is collapsing five different tools into one mental model. One CLI, one lockfile, one way to manage Python versions.
+
+For existing projects, the migration path is gentle — start with `uv pip install` as a drop-in, and work your way toward `uv add` and `uv sync` when you're ready.
+
+- Docs: [docs.astral.sh/uv](https://docs.astral.sh/uv)
+- GitHub: [github.com/astral-sh/uv](https://github.com/astral-sh/uv)
