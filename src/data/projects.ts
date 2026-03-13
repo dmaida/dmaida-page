@@ -21,6 +21,14 @@ export const projects: Project[] = [
     tech: ["Unraid", "Docker", "Nginx", "Grafana"],
   },
   {
+    title: "J & A Beautiful Events",
+    description:
+      "Bilingual (English/Spanish) website for a wedding and event planning company, featuring a hero slider, masonry gallery with lightbox, and scroll reveal animations.",
+    tech: ["Next.js", "TypeScript", "next-intl", "CSS Modules", "Docker"],
+    github: "https://github.com/dmaida/j_a_beautiful_events",
+    url: "https://jandabeautifulevents.com/",
+  },
+  {
     title: "NIC Performance Dashboard",
     description:
       "Full-stack application built at Intel that automated NIC performance test reporting, eliminating manual CSV-to-Excel workflows and enabling organization-wide access to performance data.",
