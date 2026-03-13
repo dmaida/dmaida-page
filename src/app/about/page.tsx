@@ -11,10 +11,12 @@ const experience = [
     company: "Amazon.com, Inc.",
     period: "November 2021 – Present",
     bullets: [
-      "Built abuse detection and intelligent routing features for a high-throughput contact routing service processing 1B+ events per month across 22+ Amazon marketplaces using Java and TypeScript.",
-      "Designed language-aware routing that prevents 1.56M misrouted contacts (8.79% of total traffic) per year across 40+ language pairs, improving customer satisfaction and agent efficiency.",
-      "Architected AWS infrastructure with CDK, deploying containerized microservices on ECS and Lambda with full CI/CD automation.",
-      "Simplified data warehousing pipeline by decommissioning a legacy service and migrating 14 tables to a direct 3-system flow, eliminating 5+ failure points and preventing data loss that previously affected 10K+ records.",
+      "Built abuse detection, intelligent routing, and policy decision features for a customer contact abuse prevention service processing 1B+ events per month across 22+ Amazon marketplaces using Java and TypeScript.",
+      "Designed and implemented language-aware routing across voice, email, and chat channels, preventing 1.56M misrouted contacts (8.79% of total traffic) per year across 22+ marketplaces and 40+ language pairs with per-channel fallback logic, improving customer satisfaction and agent efficiency.",
+      "Led incident response and root cause analysis for a critical outage that caused 10,700+ failed authentication attempts across 3 regions; drove 4 corrective actions including alarm strategy redesign and a canary monitoring architecture to prevent recurrence.",
+      "Led architectural planning for a mandatory multi-region migration, evaluated traffic-shifting strategies, quantified cross-regional latency penalties (~180ms P50), and coordinated migration of a service spanning 3 AWS regions across 5 independent caller services to meet an org-wide compliance deadline.",
+      "Simplified data warehousing architecture by eliminating a legacy intermediary service and migrating 14 tables to a direct SQS → Data Loader → Data Lake flow, decommissioning 3 AWS accounts and 16 code packages, resolving a security compliance requirement, and preventing data loss that previously affected 10K+ records.",
+      "Architected AWS infrastructure using CDK, deploying containerized microservices on ECS and Lambda with CI/CD automation.",
     ],
   },
   {
@@ -22,10 +24,11 @@ const experience = [
     company: "Intel Corporation",
     period: "May 2018 – November 2021",
     bullets: [
-      "Developed full-stack application (React, .NET Core, PostgreSQL) that automated NIC performance test reporting, eliminating manual workflows and enabling organization-wide access to performance data.",
-      "Built Python test automation framework for Intel Ethernet products, validating performance and reliability across 100 Gbps networking hardware.",
-      "Conducted performance analysis and benchmarking with results featured in external Intel publications.",
-      "Promoted within first year; received Divisional Recognition Award for contributions to ADQ enablement in the Intel 800 series.",
+      "Developed full-stack application (ReactJS, .NET Core, PostgreSQL) that automated NIC performance test reporting, eliminating manual CSV-to-Excel workflows and enabling organization-wide access to performance data.",
+      "Built Python test automation framework for Intel Ethernet products, validating performance, scalability, and reliability requirements across 100 Gbps networking hardware.",
+      "Conducted performance analysis, benchmarking, and optimization for high-bandwidth networking, with results used by principal engineers and VPs, and featured in external Intel publications.",
+      "Mentored interns on software engineering best practices; two converted to full-time hires.",
+      "Promoted within first year; received Divisional Recognition Award for contributions to ADQ enablement in Intel 800 series networking.",
     ],
   },
 ];
