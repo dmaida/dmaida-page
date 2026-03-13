@@ -1,0 +1,171 @@
+---
+title: "LazyVim: Neovim for People Who Have Things to Do"
+date: "2026-03-12"
+description: "A modern Neovim distribution that gives you a full IDE experience without spending a week configuring it."
+tags: ["neovim", "lazyvim", "tooling", "editor"]
+slug: "lazyvim"
+---
+
+# LazyVim: Neovim for People Who Have Things to Do
+
+I've been through the Neovim configuration rabbit hole more times than I'd like to admit. You start with a blank `init.lua`, install a plugin manager, get LSP working, add a fuzzy finder, wire up a statusline, spend two hours on indentation guides, and then look up and realize it's 11pm and you haven't actually *written any code*.
+
+**LazyVim** is the answer to that problem. It's a full Neovim distribution built on top of [lazy.nvim](https://github.com/folke/lazy.nvim) that ships a complete, well-thought-out setup out of the box — while staying fully hackable when you want to customize it.
+
+---
+
+## What LazyVim Actually Is
+
+LazyVim is not a plugin. It's a *distribution* — a curated configuration that wires together all the pieces you'd eventually build yourself: LSP, completion, syntax highlighting, file browsing, fuzzy finding, git integration, and more.
+
+The key insight is that it does this without locking you in. Every plugin can be overridden, extended, or disabled. You're not fighting against the framework to customize it; the whole thing is designed around the assumption that you *will* customize it.
+
+Under the hood, it uses:
+
+- **lazy.nvim** — plugin manager with lazy-loading and a gorgeous UI
+- **nvim-lspconfig** — language server integration
+- **nvim-cmp** — completion engine
+- **Treesitter** — syntax highlighting and structural editing
+- **Telescope** — fuzzy finding for files, grep, and more
+- **neo-tree** — file explorer
+- **which-key** — shows available keybindings as you type
+
+All configured, all working, out of the box.
+
+<figure className="my-6">
+  <img src="https://user-images.githubusercontent.com/292349/213447056-92290767-ea16-430c-8727-ce994c93e9cc.png" alt="LazyVim screenshot" className="w-full rounded-lg" />
+  <figcaption className="mt-2 text-center text-sm text-zinc-500">
+    Image from the <a href="https://github.com/LazyVim/LazyVim" className="underline hover:text-zinc-300">diff-so-fancy</a> repository by <a href="https://github.com/LazyVim" className="underline hover:text-zinc-300">LazyVim</a>
+  </figcaption>
+</figure>
+
+---
+
+## Getting Started
+
+If you have Neovim 0.9+ installed, the setup is a single command:
+
+```bash
+# Back up your existing config first
+mv ~/.config/nvim ~/.config/nvim.bak
+
+# Clone the LazyVim starter
+git clone https://github.com/LazyVim/starter ~/.config/nvim
+
+# Remove the .git directory so you own it
+rm -rf ~/.config/nvim/.git
+
+# Open Neovim — plugins install automatically
+nvim
+```
+
+First launch downloads and installs everything via lazy.nvim. You'll see a clean install UI, and within a minute or two you have a fully working editor.
+
+---
+
+## The Extras System
+
+This is where LazyVim gets clever. Beyond the core setup, it ships with optional "extras" — pre-built configurations for specific languages, tools, and workflows that you opt into.
+
+```lua
+-- lua/config/lazy.lua
+require("lazyvim.plugins.extras.lang.typescript")
+require("lazyvim.plugins.extras.lang.go")
+require("lazyvim.plugins.extras.lang.python")
+require("lazyvim.plugins.extras.formatting.prettier")
+require("lazyvim.plugins.extras.linting.eslint")
+```
+
+Each extra pulls in the right LSP servers, formatters, linters, and Treesitter parsers for that language or tool. Instead of hunting down the right combination of packages yourself, you enable an extra and it just works.
+
+There's also a menu-driven way to manage them with `:LazyExtras` — a TUI that lets you toggle extras on and off interactively.
+
+---
+
+## Customizing Without Breaking Things
+
+Your customizations live in `~/.config/nvim/lua/plugins/` as separate files. LazyVim merges these with its own defaults automatically.
+
+Want to swap the colorscheme?
+
+```lua
+-- lua/plugins/colorscheme.lua
+return {
+  {
+    "catppuccin/nvim",
+    name = "catppuccin",
+    priority = 1000,
+    opts = { flavour = "mocha" },
+  },
+  {
+    "LazyVim/LazyVim",
+    opts = {
+      colorscheme = "catppuccin",
+    },
+  },
+}
+```
+
+Want to add a keybinding or change a default?
+
+```lua
+-- lua/config/keymaps.lua
+vim.keymap.set("n", "<leader>xx", "<cmd>source %<CR>", { desc = "Execute current file" })
+```
+
+The pattern is: drop a file in `lua/plugins/`, return a spec, and lazy.nvim handles merging. You never touch the LazyVim source itself, which means updates don't clobber your changes.
+
+---
+
+## Keybindings That Make Sense
+
+One thing I genuinely appreciate is the keybinding philosophy. LazyVim uses `<Space>` as the leader key and organizes everything into logical groups:
+
+| Key | Action |
+|-----|--------|
+| `<leader>ff` | Find files (Telescope) |
+| `<leader>fg` | Live grep |
+| `<leader>fb` | Browse buffers |
+| `<leader>e` | Toggle file explorer |
+| `<leader>gg` | Open lazygit |
+| `<leader>ca` | Code action |
+| `<leader>cr` | Rename symbol |
+| `gd` | Go to definition |
+| `gr` | Go to references |
+| `K` | Hover documentation |
+
+Press `<Space>` and hold for a second — which-key pops up a menu showing every available binding in that namespace. You don't have to memorize anything upfront; you just explore.
+
+---
+
+## Who It's For
+
+LazyVim is a good fit if:
+
+- You want Neovim as a daily driver but don't want to spend weeks configuring it
+- You've tried raw Neovim or Kickstart but kept hitting walls with LSP or plugin conflicts
+- You want something maintained — LazyVim stays current with the Neovim ecosystem
+
+It's probably *not* what you want if you're a configuration purist who genuinely enjoys building from scratch and maintaining every line yourself. That's a valid workflow. LazyVim just has a different audience in mind.
+
+---
+
+## Compared to the Alternatives
+
+**Kickstart.nvim** is a single-file starting point, not a distribution. It's great for learning, but you're on your own for everything beyond the basics.
+
+**AstroNvim** and **NvChad** are similar distributions. Both are solid. I've found LazyVim's extras system and the quality of Folke's plugins (he maintains lazy.nvim, which-key, and several others) to be a cut above — but this is genuinely a matter of taste.
+
+**VS Code with the Vim extension** exists. We don't talk about it.
+
+---
+
+## Just Try It
+
+The install is reversible — your old config is backed up, and you can switch back in seconds. If you've been meaning to give Neovim a real shot but keep bouncing off the configuration overhead, LazyVim removes that excuse entirely.
+
+It's the fastest path from "Neovim is interesting" to "I'm actually productive in Neovim."
+
+---
+
+*→ [lazyvim.org](https://www.lazyvim.org) · [github.com/LazyVim/LazyVim](https://github.com/LazyVim/LazyVim)*
