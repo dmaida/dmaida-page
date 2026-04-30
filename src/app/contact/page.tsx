@@ -3,8 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub, faLinkedin } from "@fortawesome/free-brands-svg-icons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { profile } from "@/data/profile";
-import ContactForm from "@/components/ContactForm";
-
 export const metadata: Metadata = {
   title: "Contact — Daniel Maida",
 };
@@ -20,15 +18,13 @@ export default function ContactPage() {
       <div>
         <h1 className="mb-2 text-4xl font-bold">Get in Touch</h1>
         <p className="text-zinc-400">
-          Leave your contact info and I&apos;ll reach out to you.
+          Feel free to reach out through any of the platforms below.
         </p>
       </div>
 
-      <ContactForm />
-
       <div>
         <h2 className="mb-4 text-lg font-semibold text-zinc-300">
-          Or find me on
+          Find me on
         </h2>
         <div className="flex flex-col gap-3">
           {socialLinks.map(({ label, href, icon }) => (
