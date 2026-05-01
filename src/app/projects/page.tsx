@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 
 export const metadata: Metadata = {
-  title: "Projects — Dom Maida",
+  title: "Projects — Daniel Maida",
 };
 
 export default function ProjectsPage() {

@@ -12,7 +12,7 @@ export async function generateMetadata({
   params: Promise<{ tag: string }>;
 }): Promise<Metadata> {
   const { tag } = await params;
-  return { title: `#${tag} — Dom Maida Blog` };
+  return { title: `#${tag} — Daniel Maida Blog` };
 }
 
 export default async function TagPage({

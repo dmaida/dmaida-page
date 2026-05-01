@@ -3,7 +3,7 @@ import { getAllPostMeta } from "@/lib/posts";
 import PostCard from "@/components/PostCard";
 
 export const metadata: Metadata = {
-  title: "Blog — Dom Maida",
+  title: "Blog — Daniel Maida",
   description: "Thoughts on software, tooling, and self-hosted infrastructure.",
 };
 

@@ -20,7 +20,7 @@ export async function generateMetadata({
   const post = getPostBySlug(slug);
   if (!post) return {};
   return {
-    title: `${post.frontmatter.title} — Dom Maida`,
+    title: `${post.frontmatter.title} — Daniel Maida`,
     description: post.frontmatter.description,
   };
 }
