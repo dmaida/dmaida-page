@@ -36,15 +36,13 @@ const experience = [
 const education = [
   {
     degree: "B.S. Computer Science",
-    school: "[REDACTED]",
     period: "2014 – 2018",
     notes: "Graduated with honors · 3.7 GPA · Minors: Business Administration, Mathematics",
   },
   {
     degree: "A.A. General Arts",
-    school: "[REDACTED]",
     period: "2012 – 2014",
-    notes: "Graduated with honors · 3.6 GPA · [REDACTED]",
+    notes: "Graduated with honors · 3.6 GPA",
   },
 ];
 
@@ -83,10 +81,9 @@ export default function AboutPage() {
         <h2 className="mb-6 text-2xl font-semibold">Education</h2>
         <div className="flex flex-col gap-4">
           {education.map((ed) => (
-            <div key={ed.school}>
+            <div key={ed.degree}>
               <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
                 <h3 className="font-semibold text-white">{ed.degree}</h3>
-                <span className="text-zinc-400">{ed.school}</span>
                 <span className="ml-auto text-sm text-zinc-500">{ed.period}</span>
               </div>
               <p className="mt-1 text-sm text-zinc-500">{ed.notes}</p>
