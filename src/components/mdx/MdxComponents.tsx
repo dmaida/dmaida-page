@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { MDXComponents } from "mdx/types";
+import { CodeBlock } from "./CodeBlock";
 
 export const mdxComponents: MDXComponents = {
   h1: (props) => (
@@ -34,12 +35,7 @@ export const mdxComponents: MDXComponents = {
       />
     );
   },
-  pre: (props) => (
-    <pre
-      className="my-6 overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900 p-3 text-sm sm:p-4"
-      {...props}
-    />
-  ),
+  pre: (props) => <CodeBlock {...props} />,
   ul: (props) => (
     <ul className="my-4 ml-6 list-disc space-y-1 text-zinc-300" {...props} />
   ),
