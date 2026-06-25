@@ -1,0 +1,178 @@
+---
+title: "chezmoi: Dotfiles That Survive Across Machines"
+date: "2026-06-25"
+description: "A dotfile manager that handles secrets, per-machine differences, and templating — so setting up a new laptop is one command instead of an afternoon."
+tags: ["dotfiles", "chezmoi", "tooling", "productivity"]
+slug: "chezmoi"
+---
+
+# chezmoi: Dotfiles That Survive Across Machines
+
+Everyone has a dotfiles story, and most of them end the same way: a `~/dotfiles` git repo full of symlinks, a hand-rolled `install.sh` that breaks on a fresh OS, and a `.gitignore` you pray actually keeps your SSH keys out of GitHub. It works right up until you sit down at a new machine and discover that half your assumptions about paths and tooling don't hold.
+
+**chezmoi** (pronounced "shay-mwah" — French for "at my place") is a dotfile manager that takes the problem seriously. It's a single Go binary, it stores your config in a normal git repo, and it handles the three things every ad-hoc setup eventually trips over: **secrets**, **per-machine differences**, and **templating**.
+
+---
+
+## Installation
+
+```bash
+# macOS / Linux
+brew install chezmoi
+
+# Or the install script
+sh -c "$(curl -fsLS get.chezmoi.io)"
+```
+
+One binary, no runtime dependencies. The `chezmoi` command is all you need on every machine.
+
+---
+
+## The Mental Model
+
+This is the part worth understanding before you run anything, because chezmoi is a little different from a symlink farm.
+
+chezmoi keeps a **source directory** (`~/.local/share/chezmoi`, a git repo) that describes the desired state of your home directory. You don't edit your dotfiles directly anymore — you edit the source, then chezmoi *applies* it to your home directory by generating the real files.
+
+```
+source state          target state
+~/.local/share/        ~/
+  chezmoi/      ──►       .zshrc
+    dot_zshrc              .gitconfig
+    dot_gitconfig
+```
+
+Files get a `dot_` prefix in the source (so `dot_zshrc` becomes `~/.zshrc`). That sounds fussy, but it means your dotfiles are real files in the repo — not symlinks — so they render correctly on GitHub and survive being copied around.
+
+---
+
+## Getting Started
+
+```bash
+# Initialize an empty source repo
+chezmoi init
+
+# Start tracking an existing dotfile
+chezmoi add ~/.zshrc
+
+# See what chezmoi would change in your home dir
+chezmoi diff
+
+# Apply the source state to your home directory
+chezmoi apply
+```
+
+`chezmoi add` copies the file into the source directory with the right `dot_` naming. From then on you edit it through chezmoi, not in place.
+
+```bash
+# Edit a managed file (opens the source version in $EDITOR)
+chezmoi edit ~/.zshrc
+
+# Edit and apply in one step
+chezmoi edit --apply ~/.zshrc
+```
+
+---
+
+## Setting Up a New Machine
+
+This is the payoff, and it's genuinely one line. Point chezmoi at your dotfiles repo and it clones, initializes, and applies in a single command:
+
+```bash
+chezmoi init --apply git@github.com:you/dotfiles.git
+```
+
+That clones your repo into the source directory, runs any templates, and writes every file into place. A fresh laptop goes from blank to fully configured before your coffee's done.
+
+---
+
+## Secrets Without Leaking Them
+
+The reason most dotfile repos stay private is secrets. chezmoi solves this by pulling secrets at apply time from a password manager, so the repo itself never contains anything sensitive.
+
+It integrates with 1Password, Bitwarden, `pass`, `gopass`, AWS Secrets Manager, and others. You reference a secret inside a template:
+
+```bash
+# In a template file, e.g. dot_netrc.tmpl
+machine api.example.com
+  login {{ (onepasswordDetailsFields "api-token").username.value }}
+  password {{ (onepasswordDetailsFields "api-token").credential.value }}
+```
+
+The rendered `~/.netrc` has the real values; the repo only ever has the template. You can keep your dotfiles repo public without holding your breath.
+
+---
+
+## Templating and Per-Machine Differences
+
+The other thing that breaks naive dotfiles: your work laptop and your personal machine aren't identical. Different git email, different `PATH`, maybe a corporate proxy on one and not the other.
+
+chezmoi files ending in `.tmpl` are run through Go's template engine, with variables describing the current machine available to you:
+
+```bash
+# dot_gitconfig.tmpl
+[user]
+  name = Your Name
+{{- if eq .chezmoi.hostname "work-laptop" }}
+  email = you@company.com
+{{- else }}
+  email = you@personal.com
+{{- end }}
+```
+
+You can branch on hostname, OS, architecture, or your own custom variables collected during `chezmoi init`. One repo, correct config everywhere.
+
+```bash
+# See all the variables available to your templates
+chezmoi data
+
+# Test how a template renders without applying it
+chezmoi execute-template < dot_gitconfig.tmpl
+```
+
+---
+
+## The Daily Workflow
+
+Once it's set up, the loop is small. Pull changes on one machine, push them, apply on the next.
+
+```bash
+# Pull latest from your repo and apply in one step
+chezmoi update
+
+# After editing, commit and push from the source dir
+chezmoi cd
+git add . && git commit -m "Update zsh aliases" && git push
+exit
+
+# Or wire up auto-commit/auto-push in your config so you never forget
+```
+
+`chezmoi cd` drops you into the source repo so you can do normal git operations, and `exit` brings you back.
+
+---
+
+## Quick Reference
+
+| Command | What it does |
+|---|---|
+| `chezmoi init` | Create the source repo |
+| `chezmoi add ~/.zshrc` | Start managing a file |
+| `chezmoi edit ~/.zshrc` | Edit the source version |
+| `chezmoi diff` | Preview pending changes |
+| `chezmoi apply` | Write source state to home dir |
+| `chezmoi update` | Pull from git and apply |
+| `chezmoi data` | Show template variables |
+| `chezmoi cd` | Open a shell in the source repo |
+| `chezmoi init --apply <repo>` | Bootstrap a new machine |
+
+---
+
+## Worth the Switch?
+
+If you manage more than one machine — or expect to ever set up a new one — yes. The symlink-and-shell-script approach works until secrets and per-machine differences pile up, and then it quietly rots. chezmoi front-loads a little structure (the source/target model, the `dot_` naming) in exchange for a setup that's actually reproducible.
+
+The killer feature isn't any single capability; it's that `chezmoi init --apply` reduces a new-machine setup from an afternoon of copy-pasting to a single command. That alone earned it a permanent spot in my toolkit.
+
+- Docs: [chezmoi.io](https://www.chezmoi.io)
+- GitHub: [github.com/twpayne/chezmoi](https://github.com/twpayne/chezmoi)
