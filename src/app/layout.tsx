@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import NyanCat from "@/components/NyanCat";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,6 +41,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-zinc-950 text-white antialiased`}
       >
         <Navbar />
+        <div className="mx-auto max-w-5xl px-6 pt-4">
+          <NyanCat />
+        </div>
         <main className="mx-auto max-w-5xl px-6 py-12">{children}</main>
         <Footer />
       </body>

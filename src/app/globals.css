@@ -19,7 +19,7 @@ body {
 
 /* Nyan Cat footer pet */
 .nyan-track {
-  --nyan-w: 172px;
+  --nyan-w: 132px;
   position: relative;
   width: 100%;
   height: 48px;
@@ -51,11 +51,14 @@ body {
 .nyan-rainbow-col span {
   display: block;
   width: 8px;
-  height: 6px;
+  height: 4px;
 }
 
 .nyan-cat {
+  width: 44px;
+  height: 44px;
   margin-left: -2px;
+  image-rendering: pixelated;
   animation: nyan-bob 0.5s steps(2, end) infinite;
 }
 
@@ -96,13 +99,16 @@ body {
   }
 }
 
+/* The cat GIF faces left natively. scaleX(-1) flips it to face right so it
+   leads its direction of travel; the vertical bob rides on top. (When the
+   parent .nyan flips at the right edge, the cat mirrors with it to face left.) */
 @keyframes nyan-bob {
   0%,
   100% {
-    transform: translateY(0);
+    transform: scaleX(-1) translateY(0);
   }
   50% {
-    transform: translateY(-2px);
+    transform: scaleX(-1) translateY(-2px);
   }
 }
 
