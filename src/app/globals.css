@@ -16,3 +16,117 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* Nyan Cat footer pet */
+.nyan-track {
+  --nyan-w: 172px;
+  position: relative;
+  width: 100%;
+  height: 48px;
+}
+
+.nyan {
+  position: absolute;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  animation: nyan-travel 9s ease-in-out infinite;
+}
+
+.nyan-rainbow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+/* Each column is a vertical stack of the six rainbow colors. Columns wobble
+   up and down out of phase (staggered animation-delay) to make the band curve
+   into a traveling wave. */
+.nyan-rainbow-col {
+  display: flex;
+  flex-direction: column;
+  animation: nyan-wave 0.6s ease-in-out infinite;
+}
+
+.nyan-rainbow-col span {
+  display: block;
+  width: 8px;
+  height: 6px;
+}
+
+.nyan-cat {
+  margin-left: -2px;
+  animation: nyan-bob 0.5s steps(2, end) infinite;
+}
+
+/*
+ * Travel left-to-right and back in equal-time legs, easing at each end, with a
+ * brief pause at both edges where the cat flips to face its direction.
+ *   0%..10%   pause at left, facing right
+ *   10%..48%  glide to the right edge (slow-fast-slow), facing right
+ *   48%..58%  pause at right, flip to face left
+ *   58%..96%  glide back to the left edge, facing left
+ *   96%..100% pause at left, flip back to face right
+ */
+@keyframes nyan-travel {
+  0%,
+  10% {
+    left: 0;
+    transform: scaleX(1);
+  }
+  /* arrived at right edge, still facing right */
+  48% {
+    left: calc(100% - var(--nyan-w));
+    transform: scaleX(1);
+  }
+  /* paused at right edge, now flipped to face left */
+  58% {
+    left: calc(100% - var(--nyan-w));
+    transform: scaleX(-1);
+  }
+  /* arrived back at left edge, still facing left */
+  96% {
+    left: 0;
+    transform: scaleX(-1);
+  }
+  /* paused at left edge, flipped back to face right */
+  100% {
+    left: 0;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes nyan-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes nyan-wave {
+  0%,
+  100% {
+    transform: translateY(-3px);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nyan {
+    position: static;
+    animation: none;
+  }
+  .nyan-track {
+    display: flex;
+    justify-content: center;
+  }
+  .nyan-cat,
+  .nyan-rainbow-col {
+    animation: none;
+  }
+}
