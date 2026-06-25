@@ -19,15 +19,24 @@ export const mdxComponents: MDXComponents = {
       {...props}
     />
   ),
-  code: (props) => (
-    <code
-      className="rounded bg-zinc-800 px-1.5 py-0.5 font-mono text-sm text-zinc-300"
-      {...props}
-    />
-  ),
+  code: ({ className, ...props }) => {
+    // Block code (highlighted by rehype-pretty-code) carries a data-language
+    // attribute and lives inside <pre>; it must not get the inline "pill" styling.
+    const isBlock =
+      "data-language" in props || (className?.includes("language-") ?? false);
+    if (isBlock) {
+      return <code className={className} {...props} />;
+    }
+    return (
+      <code
+        className="rounded bg-zinc-800 px-1.5 py-0.5 font-mono text-sm break-words text-zinc-300"
+        {...props}
+      />
+    );
+  },
   pre: (props) => (
     <pre
-      className="my-6 overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-sm"
+      className="my-6 overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900 p-3 text-sm sm:p-4"
       {...props}
     />
   ),
