@@ -1,0 +1,174 @@
+---
+title: "OAuth 2.0 and OIDC, Finally Explained"
+date: "2026-06-28"
+description: "What OAuth 2.0 actually does, how the authorization-code flow works step by step, and why OpenID Connect is the part you actually want when you mean 'let users log in'."
+tags: ["oauth", "oidc", "security", "auth", "web"]
+slug: "oauth-explained"
+---
+
+# OAuth 2.0 and OIDC, Finally Explained
+
+Almost everyone has wired up a "Sign in with Google" button. Far fewer can explain what actually happens between the click and the logged-in user — and most of the confusion comes from one fact nobody states up front: **OAuth 2.0 was not designed to log people in.** It was designed to let one app access *another* app's data on your behalf. We bolted login onto it afterward, and that's where the muddle begins.
+
+This post untangles it: what OAuth genuinely does, how the main flow works step by step, and where OpenID Connect comes in (the piece you actually want when you mean "let users log in").
+
+---
+
+## The One Distinction That Clears Everything Up
+
+Hold these two words apart and most of OAuth stops being confusing:
+
+- **Authorization (OAuth 2.0)** — *what are you allowed to do?* Granting an app permission to access resources, like "read my calendar."
+- **Authentication (OpenID Connect)** — *who are you?* Proving a user's identity so they can log in.
+
+OAuth 2.0 answers the first. OpenID Connect (OIDC) is a thin layer **on top of** OAuth that answers the second. When you add "Sign in with Google," you're really using OIDC — even though everyone calls it "OAuth."
+
+---
+
+## The Cast of Characters
+
+OAuth defines four roles. Every flow is just these four passing messages:
+
+| Role | Who it is |
+|---|---|
+| **Resource Owner** | You — the user who owns the data |
+| **Client** | The app that wants access (e.g. a photo-printing site) |
+| **Authorization Server** | Issues tokens after you consent (e.g. Google's login) |
+| **Resource Server** | Holds the data and accepts tokens (e.g. Google Photos API) |
+
+The whole point: the **Client** gets to use your data on the **Resource Server** *without ever seeing your password*. You authenticate directly with the Authorization Server, which hands the client a token instead.
+
+---
+
+## Why Not Just Hand Over the Password?
+
+The problem OAuth solves: before it, "let this app read your Gmail contacts" meant *giving the app your Google password*. That's catastrophic — the app can now do **anything**, forever, and you can't revoke it without changing your password everywhere.
+
+OAuth replaces the password with a **token** that is:
+
+- **Scoped** — limited to specific permissions ("read contacts," not "send mail")
+- **Revocable** — you can cut off one app without touching anything else
+- **Expiring** — short-lived, so a leaked token isn't forever
+
+That's the core idea. Everything else is the choreography of getting that token safely.
+
+---
+
+## The Authorization Code Flow, Step by Step
+
+This is *the* flow — the one you should use for web and mobile apps. Follow the token as it's earned:
+
+1. **Kick-off.** The user clicks "Connect." The client redirects their browser to the authorization server with its `client_id`, the `scope` it wants, a `redirect_uri`, and a random `state` value.
+
+2. **Consent.** The user logs in *directly with the authorization server* (the client never sees this) and approves the requested scopes.
+
+3. **The code comes back.** The authorization server redirects the browser back to the client's `redirect_uri` with a short-lived **authorization code** and the same `state` it was given.
+
+4. **Back-channel exchange.** The client's *server* (not the browser) sends that code — plus its `client_secret` — directly to the authorization server and exchanges it for an **access token**.
+
+5. **Access granted.** The client calls the resource server's API with the access token in an `Authorization: Bearer ...` header. Data flows.
+
+The subtlety in step 3 vs. 4: the code travels through the *browser* (visible, interceptable), but it's useless on its own — turning it into a token requires the client secret over a direct server-to-server call. That two-step design is the whole reason this flow is the secure one.
+
+```text
+User        Client            Auth Server        Resource Server
+ │  click     │                   │                    │
+ │──────────► │  redirect w/      │                    │
+ │            │  client_id,scope  │                    │
+ │            │──────────────────►│                    │
+ │  login + consent (direct)      │                    │
+ │◄───────────────────────────────                     │
+ │            │  redirect + CODE  │                    │
+ │            │◄──────────────────│                    │
+ │            │  CODE + secret    │                    │
+ │            │──────────────────►│                    │
+ │            │  ACCESS TOKEN     │                    │
+ │            │◄──────────────────│                    │
+ │            │  API call + token │                    │
+ │            │────────────────────────────────────────►
+ │            │  data             │                    │
+ │            │◄────────────────────────────────────────
+```
+
+---
+
+## PKCE: The Flow Upgrade Everyone Should Use
+
+Mobile apps and single-page apps can't keep a `client_secret` secret — anyone can crack open the app and read it. **PKCE** (Proof Key for Code Exchange, "pixy") fixes that without a secret:
+
+1. Before kicking off, the client generates a random **code verifier** and sends a hashed version (the **code challenge**) with the initial request.
+2. When exchanging the code for a token, it sends the *original* verifier.
+3. The authorization server hashes it and checks it matches the challenge from step 1.
+
+An attacker who intercepts the authorization code can't use it, because they don't have the verifier. PKCE started as a mobile add-on but is now **recommended for all clients**, including server-side web apps.
+
+---
+
+## Tokens: Access vs. Refresh
+
+You'll get back up to two tokens, and they do different jobs:
+
+- **Access token** — the key you present to the resource server. Deliberately **short-lived** (minutes to an hour) so a leak has a small blast radius. Often a JWT.
+- **Refresh token** — a longer-lived credential used to get a *new* access token when the old one expires, without making the user log in again. Guard it carefully; it's stored only by the client's backend.
+
+The pattern: use the access token until it expires, then quietly trade the refresh token for a fresh one in the background.
+
+---
+
+## Where OpenID Connect Comes In
+
+Here's the gap OIDC fills. OAuth gives you an access token — but that token says *nothing reliable about who the user is*. It's a permission slip, not an ID card. Apps that tried to use it for login had to make non-standard API calls and guess.
+
+OIDC standardizes identity by adding three things on top of OAuth:
+
+- **The `openid` scope** — request it to trigger OIDC behavior.
+- **The ID token** — a **JWT** returned alongside the access token, containing verified claims about the user: `sub` (a stable user ID), `email`, `name`, issuer, audience, expiry. *This* is the login proof.
+- **The `/userinfo` endpoint** — a standard place to fetch additional profile claims.
+
+So the rule of thumb:
+
+> Use **OAuth 2.0** when your app needs to *do something* with another service's data.
+> Use **OIDC** when your app needs to *know who the user is*.
+
+"Sign in with Google" is OIDC. "Let this app post to your calendar" is OAuth. They often happen together — but knowing which token you actually care about (ID token for login, access token for API calls) saves a lot of grief.
+
+---
+
+## Common Mistakes
+
+The failure modes that bite people, concentrated:
+
+- **Using the access token as proof of identity.** It isn't one — use the ID token. An access token is not guaranteed to be tied to the user you think.
+- **Skipping the `state` parameter.** It's your CSRF defense: generate it, store it, verify the returned value matches. Dropping it opens you to login-CSRF attacks.
+- **Loose `redirect_uri` matching.** Authorization servers must match the redirect URI *exactly*. Wildcards or "starts-with" checks are how tokens get redirected to an attacker.
+- **Storing tokens in `localStorage`.** Readable by any XSS. Prefer secure, `HttpOnly` cookies or in-memory storage for browser apps.
+- **Reaching for the Implicit flow.** It returned tokens straight through the browser URL and is now **deprecated**. Use Authorization Code + PKCE instead — always.
+- **Not validating the ID token's signature, `iss`, `aud`, and `exp`.** An unverified JWT is just a claim, not proof.
+
+---
+
+## Quick Reference
+
+| Term | What it is |
+|---|---|
+| Authorization (OAuth) | What you're allowed to do |
+| Authentication (OIDC) | Who you are |
+| Authorization Code flow | The secure flow for web & mobile apps |
+| PKCE | Code-verifier proof; use it for every client |
+| Access token | Short-lived key for the resource server's API |
+| Refresh token | Long-lived; trades for new access tokens |
+| ID token | JWT proving identity (OIDC only) |
+| `state` | Random value that defends against CSRF |
+| `scope` | The specific permissions being requested |
+
+---
+
+## Worth Understanding?
+
+You can ship a login button by copying a tutorial and never reading this. But the moment something breaks — a redirect mismatch, an expired token, a "why am I getting an access token when I wanted user info?" — the concepts are what save you. The whole protocol collapses into something simple once you hold *authorization vs. authentication* in your head and follow the token from consent to API call.
+
+OAuth gets your app permission. OIDC tells your app who's knocking. Most of the confusion online comes from blurring those two — keep them apart and the rest follows.
+
+- OAuth 2.0: [oauth.net/2](https://oauth.net/2/)
+- OpenID Connect: [openid.net/connect](https://openid.net/connect/)
+- The spec, if you're brave: [RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749)
