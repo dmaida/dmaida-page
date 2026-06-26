@@ -1,0 +1,245 @@
+---
+title: "Add Sign in with GitHub to a Next.js App"
+date: "2026-06-29"
+description: "Wiring up the OAuth Authorization Code flow by hand in Next.js — register the app, redirect, exchange the code, fetch the user — so you can see exactly what 'Sign in with GitHub' really does."
+tags: ["oauth", "nextjs", "typescript", "auth", "web"]
+slug: "sign-in-with-github"
+---
+
+# Add Sign in with GitHub to a Next.js App
+
+Last time I [explained OAuth 2.0 and OIDC](/blog/oauth-explained) conceptually — the roles, the authorization-code flow, the tokens. This post turns that theory into a working "Sign in with GitHub" button in Next.js, written by hand.
+
+To be clear up front: in a real production app you'd usually reach for a library like [Auth.js](https://authjs.dev) (NextAuth) and let it handle the ceremony. But wiring it manually *once* is the best way to make the concepts concrete — you'll see exactly where the `state` parameter lives, what the code-for-token exchange actually sends, and why the secret never touches the browser. After this, the library's magic stops being magic.
+
+We'll use the **Authorization Code flow** (the secure one from the explainer) with App Router route handlers.
+
+---
+
+## Step 1: Register a GitHub OAuth App
+
+Before any code, GitHub needs to know about your app. Go to **GitHub → Settings → Developer settings → OAuth Apps → New OAuth App** and fill in:
+
+- **Application name** — anything.
+- **Homepage URL** — `http://localhost:3000` for local dev.
+- **Authorization callback URL** — `http://localhost:3000/api/auth/callback`. This is the `redirect_uri`, and GitHub matches it **exactly** — a trailing slash mismatch will break the flow.
+
+You'll get a **Client ID** and can generate a **Client Secret**. Put them in `.env.local` (which Next.js loads automatically and `.gitignore` already covers):
+
+```bash
+# .env.local
+GITHUB_CLIENT_ID=your_client_id
+GITHUB_CLIENT_SECRET=your_client_secret
+APP_URL=http://localhost:3000
+```
+
+The secret is server-only — note there's no `NEXT_PUBLIC_` prefix, so it never gets bundled into client code.
+
+---
+
+## Step 2: The Login Route — Redirect to GitHub
+
+The login route builds the authorization URL and redirects the user's browser to GitHub. The key security detail: generate a random **`state`** value, stash it in an `HttpOnly` cookie, and send it along — we'll verify it on the way back to defend against CSRF.
+
+```typescript
+// app/api/auth/login/route.ts
+import { NextResponse } from "next/server";
+import { randomBytes } from "crypto";
+
+export async function GET() {
+  const state = randomBytes(16).toString("hex");
+
+  const params = new URLSearchParams({
+    client_id: process.env.GITHUB_CLIENT_ID!,
+    redirect_uri: `${process.env.APP_URL}/api/auth/callback`,
+    scope: "read:user user:email",
+    state,
+  });
+
+  const res = NextResponse.redirect(
+    `https://github.com/login/oauth/authorize?${params}`,
+  );
+
+  // Store state in an HttpOnly cookie to verify in the callback.
+  res.cookies.set("oauth_state", state, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 600, // 10 minutes
+    path: "/",
+  });
+
+  return res;
+}
+```
+
+`scope: "read:user user:email"` asks GitHub for the user's profile and email — nothing more. Request the minimum you need.
+
+---
+
+## Step 3: The Callback — Verify State, Exchange the Code
+
+GitHub redirects back to `/api/auth/callback?code=...&state=...`. This handler does the security-critical work:
+
+1. **Verify `state`** matches the cookie (CSRF defense).
+2. **Exchange the code** for an access token via a server-to-server `POST` — this is where the client secret is used, on the back channel, never in the browser.
+3. **Call the GitHub API** with the token to fetch the user.
+
+```typescript
+// app/api/auth/callback/route.ts
+import { NextRequest, NextResponse } from "next/server";
+
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const code = searchParams.get("code");
+  const state = searchParams.get("state");
+  const storedState = req.cookies.get("oauth_state")?.value;
+
+  // 1. CSRF check: the returned state must match what we issued.
+  if (!code || !state || state !== storedState) {
+    return NextResponse.redirect(`${process.env.APP_URL}/login?error=state`);
+  }
+
+  // 2. Back-channel exchange: code + secret -> access token.
+  const tokenRes = await fetch(
+    "https://github.com/login/oauth/access_token",
+    {
+      method: "POST",
+      headers: { Accept: "application/json" },
+      body: new URLSearchParams({
+        client_id: process.env.GITHUB_CLIENT_ID!,
+        client_secret: process.env.GITHUB_CLIENT_SECRET!,
+        code,
+        redirect_uri: `${process.env.APP_URL}/api/auth/callback`,
+      }),
+    },
+  );
+
+  const { access_token } = await tokenRes.json();
+  if (!access_token) {
+    return NextResponse.redirect(`${process.env.APP_URL}/login?error=token`);
+  }
+
+  // 3. Use the token to fetch the user from the resource server.
+  const userRes = await fetch("https://api.github.com/user", {
+    headers: {
+      Authorization: `Bearer ${access_token}`,
+      Accept: "application/vnd.github+json",
+    },
+  });
+  const user = await userRes.json();
+
+  // ...create a session for `user` (next step), then redirect home.
+  const res = NextResponse.redirect(`${process.env.APP_URL}/`);
+  res.cookies.delete("oauth_state");
+  return res;
+}
+```
+
+Notice the access token only ever exists on the server. The browser never sees it — it only receives the session cookie we set next.
+
+---
+
+## Step 4: Persist a Session
+
+You've authenticated the user, but a raw GitHub access token isn't a session. Don't ship it to the browser. Instead, create your *own* session — the simplest safe version is a signed, `HttpOnly` cookie holding minimal user info.
+
+```typescript
+// lib/session.ts
+import { cookies } from "next/headers";
+
+type SessionUser = { id: number; login: string; avatar: string };
+
+export async function setSession(user: SessionUser) {
+  // In production, sign or encrypt this (e.g. with `jose`) — don't trust
+  // a plain cookie. Keep the payload minimal.
+  const store = await cookies();
+  store.set("session", JSON.stringify(user), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 7, // 1 week
+    path: "/",
+  });
+}
+
+export async function getSession(): Promise<SessionUser | null> {
+  const raw = (await cookies()).get("session")?.value;
+  return raw ? (JSON.parse(raw) as SessionUser) : null;
+}
+```
+
+Then in the callback, after fetching the user:
+
+```typescript
+await setSession({
+  id: user.id,
+  login: user.login,
+  avatar: user.avatar_url,
+});
+```
+
+> A plain JSON cookie is fine for learning, but in production **sign or encrypt the session** so a user can't edit their own cookie to impersonate someone else. The [`jose`](https://github.com/panva/jose) library makes signing a JWT a couple of lines.
+
+---
+
+## Step 5: The Button and Reading the User
+
+The login button is just a link to the route we built — no client JS needed:
+
+```tsx
+// app/login/page.tsx
+export default function LoginPage() {
+  return (
+    <a
+      href="/api/auth/login"
+      className="rounded-lg bg-white px-6 py-2.5 font-semibold text-zinc-900"
+    >
+      Sign in with GitHub
+    </a>
+  );
+}
+```
+
+And any server component can read the session:
+
+```tsx
+// app/page.tsx
+import { getSession } from "@/lib/session";
+
+export default async function Home() {
+  const user = await getSession();
+  return user ? <p>Hey, {user.login} 👋</p> : <p>Not signed in.</p>;
+}
+```
+
+Logging out is just deleting the session cookie in a small route handler.
+
+---
+
+## Mapping This Back to the Theory
+
+Every step here is a role from the [explainer](/blog/oauth-explained) doing its job:
+
+| In this app | OAuth role |
+|---|---|
+| The user clicking the button | Resource Owner |
+| Your Next.js app | Client |
+| `github.com/login/oauth/*` | Authorization Server |
+| `api.github.com` | Resource Server |
+| The random `state` cookie | CSRF defense |
+| The back-channel `POST` | Code-for-token exchange |
+
+This is plain OAuth 2.0 (authorization), not OIDC — GitHub doesn't issue an ID token. We "log in" by taking the access token, calling `/user`, and trusting GitHub's answer about identity. With an OIDC provider like Google you'd instead validate the **ID token** directly, as the explainer described.
+
+---
+
+## Worth Doing By Hand?
+
+For a real product, use Auth.js — it handles PKCE, token refresh, CSRF, session encryption, and a dozen providers you'd otherwise wire up one by one. I'm not suggesting you ship this.
+
+But doing it manually once is genuinely worth an afternoon. The `state` cookie, the server-only secret, the back-channel exchange, the "access token ≠ session" distinction — these stop being abstract the moment you've typed them out and watched the redirect chain happen in your browser's network tab. When the library later throws a `redirect_uri_mismatch` or a state error, you'll know exactly what it means.
+
+- GitHub OAuth docs: [docs.github.com/apps/oauth-apps](https://docs.github.com/en/apps/oauth-apps)
+- Auth.js (when you're done learning): [authjs.dev](https://authjs.dev)
+- The concepts behind all this: [OAuth 2.0 and OIDC, Finally Explained](/blog/oauth-explained)
