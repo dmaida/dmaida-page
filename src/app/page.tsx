@@ -3,15 +3,20 @@ import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLinkedin } from "@fortawesome/free-brands-svg-icons";
 import { profile } from "@/data/profile";
+import { getAllPostMeta } from "@/lib/posts";
+import PostCard from "@/components/PostCard";
 
 export default function Home() {
+  const recentPosts = getAllPostMeta().slice(0, 3);
+
   return (
-    <section className="flex min-h-[calc(100vh-10rem)] flex-col items-center justify-center gap-6 text-center">
+    <div className="flex flex-col gap-12">
+      <section className="flex flex-col items-center justify-center gap-6 pt-8 text-center">
       <Image
         src={profile.avatar}
         alt={profile.name}
-        width={250}
-        height={250}
+        width={180}
+        height={180}
         className="rounded-full ring-2 ring-zinc-700"
         priority
       />
@@ -43,6 +48,28 @@ export default function Home() {
           LinkedIn
         </Link>
       </div>
-    </section>
+      </section>
+
+      {recentPosts.length > 0 && (
+        <section>
+          <div className="mb-6 flex items-baseline justify-between">
+            <h2 className="text-2xl font-bold tracking-tight text-white">
+              Latest Writing
+            </h2>
+            <Link
+              href="/blog"
+              className="text-sm text-zinc-400 transition-colors hover:text-white"
+            >
+              View all →
+            </Link>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {recentPosts.map((post) => (
+              <PostCard key={post.frontmatter.slug} post={post} />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
   );
 }
