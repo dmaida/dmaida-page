@@ -1,0 +1,198 @@
+---
+title: "Traefik: The Reverse Proxy That Configures Itself"
+date: "2026-06-27"
+description: "A reverse proxy that discovers your Docker containers automatically and handles TLS for you — so adding a new service is a couple of labels, not a config-file edit and a reload."
+tags: ["traefik", "docker", "self-hosted", "homelab", "reverse-proxy"]
+slug: "traefik"
+---
+
+# Traefik: The Reverse Proxy That Configures Itself
+
+In my [Docker Compose patterns](/blog/docker-compose-patterns) post I mentioned putting every service behind a reverse proxy on a shared `proxy` network. This is the post about the proxy itself.
+
+If you've used nginx as a reverse proxy, you know the ritual: add a service, write a `server` block, get the TLS cert, reload nginx, repeat. It works, but every new service is a config-file edit. **Traefik** flips that around — it watches Docker and configures *itself* from labels on your containers. Add a service with the right labels and it's routed and served over HTTPS in seconds, no proxy restart, no separate config file.
+
+---
+
+## How Traefik Thinks
+
+Two concepts unlock everything else:
+
+- **Providers** — where Traefik discovers routes. For a homelab, the provider is the Docker socket: Traefik watches running containers and reads their labels.
+- **Entrypoints** — the ports Traefik listens on (typically `:80` and `:443`).
+
+The flow is: a request hits an entrypoint → Traefik matches it to a **router** (by hostname) → the router sends it to a **service** (your container). You define the router with labels; Traefik infers the service.
+
+---
+
+## The Traefik Service Itself
+
+Here's a complete Traefik setup as its own Compose stack. It joins the same external `proxy` network from the Compose patterns post.
+
+```yaml
+# traefik/compose.yaml
+services:
+  traefik:
+    image: traefik:v3.3
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      # Discover containers via the Docker socket
+      - --providers.docker=true
+      # Don't expose every container by default — opt in per service
+      - --providers.docker.exposedbydefault=false
+      # Listen on HTTP and HTTPS
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      # Let's Encrypt via a TLS-ALPN challenge
+      - --certificatesresolvers.le.acme.tlschallenge=true
+      - [email protected]
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Read-only access to the Docker socket
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Persist issued certificates
+      - ./letsencrypt:/letsencrypt
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+```
+
+Two settings worth calling out. `exposedbydefault=false` means containers are *not* routed unless you explicitly add `traefik.enable=true` — a safer default than exposing everything. And mounting the Docker socket **read-only** (`:ro`) limits what a compromised Traefik could do.
+
+---
+
+## Routing a Service Is Just Labels
+
+Now the payoff. To put a service behind Traefik, you add labels — no Traefik config changes at all.
+
+```yaml
+services:
+  app:
+    image: ghcr.io/example/app:1.2.3
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - traefik.enable=true
+      # Route requests for this hostname to this service
+      - traefik.http.routers.app.rule=Host(`app.example.com`)
+      # Serve it over HTTPS using the "websecure" entrypoint
+      - traefik.http.routers.app.entrypoints=websecure
+      # Use the Let's Encrypt resolver we defined on Traefik
+      - traefik.http.routers.app.tls.certresolver=le
+      # Tell Traefik which container port to forward to
+      - traefik.http.services.app.loadbalancer.server.port=8080
+
+networks:
+  proxy:
+    external: true
+```
+
+That's the whole thing. `app.example.com` now resolves through Traefik, gets a real certificate automatically, and you never touched the proxy. Notice there's **no `ports:` mapping** — the container isn't exposed to the host directly, only reachable through Traefik on the shared network. That `loadbalancer.server.port` is the container's *internal* port, which is why no host mapping is needed.
+
+---
+
+## Redirect HTTP to HTTPS Everywhere
+
+You almost always want plain HTTP requests bounced to HTTPS. Define a redirect middleware on the Traefik service and apply it globally to the `web` entrypoint:
+
+```yaml
+    command:
+      # ...existing flags...
+      # Global redirect: everything on :80 → :443
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+```
+
+Now any request to `http://app.example.com` is redirected to `https://` before it reaches your service — no per-service config needed.
+
+---
+
+## Middlewares: Auth, Headers, Rate Limits
+
+Middlewares sit between the router and your service. They're how you add basic auth, security headers, or rate limiting without touching the app. Here's basic auth in front of a service that doesn't have its own login:
+
+```yaml
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dashboard.rule=Host(`traefik.example.com`)
+      - traefik.http.routers.dashboard.entrypoints=websecure
+      - traefik.http.routers.dashboard.tls.certresolver=le
+      # Define a basic-auth middleware (user:bcrypt-hash)
+      - traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$xyz...
+      # Attach it to this router
+      - traefik.http.routers.dashboard.middlewares=auth
+```
+
+Generate the hash with `htpasswd`. Note the **doubled dollar signs** (`$$`) — in a Compose file, `$` is interpolated, so you escape it by doubling. This is a classic gotcha that produces a silently-broken password.
+
+```bash
+# Generate a bcrypt user:hash pair (then double every $ for Compose)
+htpasswd -nbB admin 'your-password'
+```
+
+---
+
+## The Dashboard
+
+Traefik ships a dashboard that shows your routers, services, and middlewares live — invaluable when a route isn't behaving. Enable it, then route it like any other service (behind auth, ideally):
+
+```yaml
+    command:
+      # ...existing flags...
+      - --api.dashboard=true
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dashboard.rule=Host(`traefik.example.com`)
+      - traefik.http.routers.dashboard.entrypoints=websecure
+      - traefik.http.routers.dashboard.tls.certresolver=le
+      - traefik.http.routers.dashboard.service=api@internal
+      - traefik.http.routers.dashboard.middlewares=auth
+```
+
+The `api@internal` service is Traefik's built-in handler for its own dashboard.
+
+---
+
+## Traefik vs. Caddy vs. nginx
+
+Honest trade-offs, because Traefik isn't always the right pick:
+
+- **nginx** — the most powerful and battle-tested, but fully manual. Every service is a config edit and a reload. Great when you want total control; tedious for a churning homelab.
+- **Caddy** — automatic HTTPS like Traefik, with a famously simple `Caddyfile`. Slightly less dynamic — it shines with a static config rather than Docker label discovery (though plugins add that).
+- **Traefik** — the best fit when your services live in Docker and change often. Label-based auto-discovery means adding a service never touches the proxy. The cost is a steeper mental model (routers/services/middlewares/providers) and labels that get verbose.
+
+If your stack is Docker Compose and you add or remove services regularly, Traefik's auto-discovery is the feature that pays for the learning curve.
+
+---
+
+## Quick Reference
+
+| Concept | What it is |
+|---|---|
+| Provider | Where Traefik discovers routes (the Docker socket) |
+| Entrypoint | A port Traefik listens on (`web` :80, `websecure` :443) |
+| Router | Matches a request (by `Host(...)`) to a service |
+| Service | Your container, plus which internal port to hit |
+| Middleware | Auth / headers / rate limits between router and service |
+| `traefik.enable=true` | Opt a container in to routing |
+| `certresolver=le` | Auto-provision a Let's Encrypt cert |
+| `$$` in labels | Escaped `$` (Compose interpolation gotcha) |
+
+---
+
+## Worth It?
+
+If you run one or two services, nginx or Caddy with a static config is simpler and I wouldn't fight you on it. But the moment your homelab becomes a living thing — services coming and going, each wanting its own subdomain and certificate — Traefik's self-configuration is genuinely freeing. You stop editing proxy config entirely and just annotate containers.
+
+Paired with the [Compose patterns](/blog/docker-compose-patterns) from last time, this is the setup I run: one Traefik stack on a shared `proxy` network, every other service joining it with a few labels. New service, new subdomain, valid HTTPS — in about thirty seconds.
+
+- Docs: [doc.traefik.io/traefik](https://doc.traefik.io/traefik/)
+- GitHub: [github.com/traefik/traefik](https://github.com/traefik/traefik)
