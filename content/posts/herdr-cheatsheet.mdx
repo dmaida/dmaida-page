@@ -1,0 +1,179 @@
+---
+title: "The Herdr Cheatsheet"
+date: "2026-07-16"
+description: "A quick reference for Herdr, the mouse-first terminal workspace manager — quick start, the object model, agent states, keybindings, copy mode, and config."
+tags: ["herdr", "terminal", "multiplexer", "cheatsheet", "tooling"]
+slug: "herdr-cheatsheet"
+---
+
+# The Herdr Cheatsheet
+
+[Herdr](https://herdr.dev) is a mouse-first terminal workspace manager — approachable for newcomers, familiar to tmux and zellij users. It keeps real terminal processes running, lets you detach without stopping your agents, and adds structure around your work.
+
+The mouse covers everything, so keyboard bindings are optional. When you do use them, the default prefix is `ctrl+b` — shown below as <kbd className="ldr">C-b</kbd>. Press <kbd className="ldr">C-b</kbd><kbd>?</kbd> anytime to see every active binding.
+
+<div className="lv-sheet herdr">
+
+<div className="lv-card hero">
+  <h4>🚀 Quick Start</h4>
+  <div className="lv-grid" style={{gap:'0 1.5rem', gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))'}}>
+    <div>
+      <div className="lv-row" style={{borderBottom:'none'}}><span className="lv-desc">Launch or attach to your default session</span></div>
+      <div className="lv-cmd"><span className="p">$ </span>herdr</div>
+      <div className="lv-row" style={{borderBottom:'none', marginTop:'.5rem'}}><span className="lv-desc">Start a coding agent — auto-detected</span></div>
+      <div className="lv-cmd"><span className="p">$ </span>claude <span style={{color:'#6b7383'}}># or codex, pi, opencode…</span></div>
+    </div>
+    <div>
+      <div className="lv-row"><span className="lv-desc">A workspace opens automatically when a session has none — one per project.</span></div>
+      <div className="lv-row" style={{borderBottom:'none'}}><span className="lv-desc">Detach any time; server &amp; agents keep running. Run <kbd>herdr</kbd> again to reattach.</span></div>
+      <div className="lv-cmd"><span className="p">$ </span>herdr server stop <span style={{color:'#6b7383'}}># fully end it</span></div>
+    </div>
+  </div>
+</div>
+
+<div className="lv-sec"><span className="dot"></span><h3>Essentials</h3><span className="bar"></span></div>
+
+<div className="lv-grid">
+
+  <div className="lv-card">
+    <h4>⌨️ The Essential Five</h4>
+    <div className="lv-row"><span className="lv-desc">New tab</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>c</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Split right / down</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>v</kbd><span className="lv-sep">/</span><kbd>-</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Move between panes</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>h j k l</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Workspace navigation</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>w</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Detach, leave everything running</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>q</kbd></span></div>
+    <p className="lv-note">See every binding with <kbd className="ldr">C-b</kbd><kbd>?</kbd>.</p>
+  </div>
+
+  <div className="lv-card c4">
+    <h4>🖱️ Mouse Moves</h4>
+    <div className="lv-row"><span className="lv-desc">Focus pane / tab / workspace / agent</span><span className="lv-keys"><kbd>Click</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Resize panes</span><span className="lv-keys"><kbd>Drag border</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Context menu (split, close, rename)</span><span className="lv-keys"><kbd>Right-click</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Copy — no Ctrl+C needed</span><span className="lv-keys"><kbd>Drag</kbd><span className="lv-sep">/</span><kbd>2× click</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Open pane link (URL / OSC 8)</span><span className="lv-keys"><kbd>Ctrl</kbd><span className="lv-sep">+</span><kbd>Click</kbd></span></div>
+    <p className="lv-note">On macOS, <kbd>Cmd</kbd>+Click works through the terminal-native bypass path.</p>
+  </div>
+
+  <div className="lv-card c3">
+    <h4>🎛️ The Three Modes</h4>
+    <div className="lv-row"><span className="lv-desc"><strong>Terminal</strong> — sends keys to the focused pane</span></div>
+    <div className="lv-row"><span className="lv-desc"><strong>Prefix</strong> — waits for one Herdr action after the prefix key</span></div>
+    <div className="lv-row" style={{borderBottom:'none'}}><span className="lv-desc"><strong>Navigate</strong> — the persistent workspace navigation surface</span></div>
+    <p className="lv-note">Default prefix key: <kbd className="ldr">C-b</kbd> (configurable via <code>prefix = "ctrl+a"</code>).</p>
+  </div>
+
+</div>
+
+<div className="lv-sec g3"><span className="dot"></span><h3>Core Concepts</h3><span className="bar"></span></div>
+
+<div className="lv-grid">
+  <div className="lv-card c3">
+    <h4>🧱 The Object Model</h4>
+    <div className="lv-row"><span className="lv-desc"><strong>Workspace</strong> — top-level project container. Owns tabs &amp; panes; sidebar state rolls up from its agents.</span></div>
+    <div className="lv-row"><span className="lv-desc"><strong>Tab</strong> — a layout inside a workspace (agents, logs, review…). Addressable from CLI &amp; socket API.</span></div>
+    <div className="lv-row"><span className="lv-desc"><strong>Pane</strong> — a real terminal. Stays alive across client detach.</span></div>
+    <div className="lv-row" style={{borderBottom:'none'}}><span className="lv-desc"><strong>Agent</strong> — a process Herdr recognizes inside a pane.</span></div>
+  </div>
+  <div className="lv-card c3">
+    <h4>🖧 Sessions &amp; Architecture</h4>
+    <div className="lv-row"><span className="lv-desc"><strong>Session</strong> — a persistent server namespace. Default command attaches to the default session.</span></div>
+    <div className="lv-row"><span className="lv-desc"><strong>Server</strong> — owns panes and process state; survives detach.</span></div>
+    <div className="lv-row"><span className="lv-desc"><strong>Client</strong> — the attached terminal UI.</span></div>
+    <div className="lv-row" style={{borderBottom:'none'}}><span className="lv-desc"><strong>Mouse UI</strong> — mouse-native; disable with <code>mouse_capture = false</code>.</span></div>
+  </div>
+</div>
+
+<div className="lv-sec g4"><span className="dot"></span><h3>Agent Status (sidebar)</h3><span className="bar"></span></div>
+
+<div className="lv-grid">
+  <div className="lv-card c5">
+    <h4>📡 What Each State Means</h4>
+    <div className="lv-row"><span className="lv-desc">The agent is actively running</span><span className="lv-keys"><span className="lv-chip working">working</span></span></div>
+    <div className="lv-row"><span className="lv-desc">Needs input, approval, or a decision</span><span className="lv-keys"><span className="lv-chip blocked">blocked</span></span></div>
+    <div className="lv-row"><span className="lv-desc">Finished but not yet viewed by you</span><span className="lv-keys"><span className="lv-chip done">done</span></span></div>
+    <div className="lv-row"><span className="lv-desc">Finished or waiting, already seen</span><span className="lv-keys"><span className="lv-chip idle">idle</span></span></div>
+    <div className="lv-row" style={{borderBottom:'none'}}><span className="lv-desc">Can't confidently classify the state</span><span className="lv-keys"><span className="lv-chip unknown">unknown</span></span></div>
+  </div>
+</div>
+
+<div className="lv-sec"><span className="dot"></span><h3>Keyboard Bindings</h3><span className="bar"></span></div>
+
+<div className="lv-grid">
+
+  <div className="lv-card c4">
+    <h4>▦ Panes</h4>
+    <div className="lv-row"><span className="lv-desc">Split right / down</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>v</kbd><span className="lv-sep">/</span><kbd>-</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Move between panes</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>h j k l</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Swap panes</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>⇧ h j k l</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Zoom focused pane</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>z</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Resize mode</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>r</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Copy mode</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>[</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Close pane</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>x</kbd></span></div>
+  </div>
+
+  <div className="lv-card c2">
+    <h4>🗂️ Tabs</h4>
+    <div className="lv-row"><span className="lv-desc">New tab</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>c</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Next / previous tab</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>n</kbd><span className="lv-sep">/</span><kbd>p</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Jump to tab 1–9</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>1..9</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Rename tab</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>⇧ t</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Close tab</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>⇧ x</kbd></span></div>
+  </div>
+
+  <div className="lv-card">
+    <h4>🪟 Workspaces &amp; Session</h4>
+    <div className="lv-row"><span className="lv-desc">Workspace navigation</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>w</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">New workspace</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>⇧ n</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Rename workspace</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>⇧ w</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Close workspace</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>⇧ d</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Goto picker</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>g</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Toggle sidebar</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>b</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Detach client</span><span className="lv-keys"><kbd className="ldr">C-b</kbd><kbd>q</kbd></span></div>
+  </div>
+
+</div>
+
+<div className="lv-sec g2"><span className="dot"></span><h3>Copy Mode <span style={{fontSize:'.8rem',fontWeight:400,color:'#9aa3b2'}}>— enter with <kbd className="ldr">C-b</kbd><kbd>[</kbd></span></h3><span className="bar"></span></div>
+
+<div className="lv-grid">
+  <div className="lv-card c2">
+    <h4>↕ Movement</h4>
+    <div className="lv-row"><span className="lv-desc">Cursor / word / paragraph</span><span className="lv-keys"><kbd>h j k l</kbd><span className="lv-sep">·</span><kbd>w b e</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Paragraph up / down</span><span className="lv-keys"><kbd>&#123;</kbd><span className="lv-sep">/</span><kbd>&#125;</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Page up / down</span><span className="lv-keys"><kbd>PgUp</kbd><span className="lv-sep">/</span><kbd>PgDn</kbd></span></div>
+    <div className="lv-row" style={{borderBottom:'none'}}><span className="lv-desc">Half-page up / down</span><span className="lv-keys"><kbd>C-u</kbd><span className="lv-sep">/</span><kbd>C-d</kbd></span></div>
+  </div>
+  <div className="lv-card c2">
+    <h4>🔍 Search</h4>
+    <div className="lv-row"><span className="lv-desc">Search forward / backward</span><span className="lv-keys"><kbd>/</kbd><span className="lv-sep">/</span><kbd>?</kbd></span></div>
+    <div className="lv-row" style={{borderBottom:'none'}}><span className="lv-desc">Repeat same / opposite direction</span><span className="lv-keys"><kbd>n</kbd><span className="lv-sep">/</span><kbd>N</kbd></span></div>
+  </div>
+  <div className="lv-card c2">
+    <h4>✂️ Select &amp; Copy</h4>
+    <div className="lv-row"><span className="lv-desc">Start a selection</span><span className="lv-keys"><kbd>v</kbd><span className="lv-sep">/</span><kbd>Space</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Copy selection</span><span className="lv-keys"><kbd>y</kbd><span className="lv-sep">/</span><kbd>Enter</kbd></span></div>
+    <div className="lv-row" style={{borderBottom:'none'}}><span className="lv-desc">Leave without copying</span><span className="lv-keys"><kbd>q</kbd><span className="lv-sep">/</span><kbd>Esc</kbd></span></div>
+    <p className="lv-note"><kbd>Esc</kbd> first clears an active selection/search, then leaves copy mode.</p>
+  </div>
+</div>
+
+<div className="lv-sec g4"><span className="dot"></span><h3>Config &amp; Notifications</h3><span className="bar"></span></div>
+
+<div className="lv-grid">
+  <div className="lv-card c4">
+    <h4>⚙️ config.toml</h4>
+    <div className="lv-row" style={{borderBottom:'none'}}><span className="lv-desc">TOML file at <code>~/.config/herdr/config.toml</code> (override with <code>HERDR_CONFIG_PATH</code>). Edit, then <strong>reload config</strong> from the global menu.</span></div>
+    <div className="lv-cmd">[ui.toast]<br/>delivery = "herdr"  <span style={{color:'#6b7383'}}># herdr | terminal | system | off</span><br/>delay_seconds = 1<br/><br/>[ui.toast.herdr]<br/>position = "bottom-right"</div>
+  </div>
+  <div className="lv-card c4">
+    <h4>🔔 Sound</h4>
+    <div className="lv-row" style={{borderBottom:'none'}}><span className="lv-desc">mp3 files, relative paths resolve from the config dir. Per-agent overrides accept <code>default</code>/<code>on</code>/<code>off</code>.</span></div>
+    <div className="lv-cmd">[ui.sound]<br/>path = "sounds/notification.mp3"<br/>done_path = "sounds/done.mp3"<br/><br/>[ui.sound.agents]<br/>droid = "off"<br/>claude = "on"</div>
+    <p className="lv-note"><code>HERDR_DISABLE_SOUND</code> disables playback even when sound is enabled.</p>
+  </div>
+</div>
+
+</div>
+
+*→ Docs: [herdr.dev/docs](https://herdr.dev/docs/) · [quick start](https://herdr.dev/docs/quick-start/) · [keyboard](https://herdr.dev/docs/keyboard/)*
