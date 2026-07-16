@@ -1,0 +1,203 @@
+---
+title: "The LazyVim Cheatsheet"
+date: "2026-07-16"
+description: "A quick reference for LazyVim's default keymaps — motions, windows, buffers, LSP, git, search, and the extras worth knowing."
+tags: ["neovim", "lazyvim", "cheatsheet", "editor", "tooling"]
+slug: "lazyvim-cheatsheet"
+---
+
+# The LazyVim Cheatsheet
+
+A companion to [my post on why LazyVim is my Neovim distribution of choice](/blog/lazyvim) — the keymaps worth memorizing, grouped by what you're trying to do.
+
+The leader key is `<Space>` (written `⎵` on the keys below); the local leader is `\`. Tap `⎵` and wait, and [which-key](https://github.com/folke/which-key.nvim) shows every binding in that namespace.
+
+<div className="lv-sheet">
+
+<div className="lv-card hero">
+  <h4>⭐ The Ten You'll Use Constantly</h4>
+  <div className="lv-grid" style={{gap:'0 1.5rem', gridTemplateColumns:'repeat(auto-fill,minmax(230px,1fr))'}}>
+    <div>
+      <div className="lv-row"><span className="lv-desc">Find files</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>⎵</kbd></span></div>
+      <div className="lv-row"><span className="lv-desc">Grep the project</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>/</kbd></span></div>
+      <div className="lv-row"><span className="lv-desc">Switch buffer</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>,</kbd></span></div>
+      <div className="lv-row"><span className="lv-desc">File explorer</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>e</kbd></span></div>
+      <div className="lv-row" style={{borderBottom:'none'}}><span className="lv-desc">Open lazygit</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>gg</kbd></span></div>
+    </div>
+    <div>
+      <div className="lv-row"><span className="lv-desc">Go to definition</span><span className="lv-keys"><kbd>gd</kbd></span></div>
+      <div className="lv-row"><span className="lv-desc">Find references</span><span className="lv-keys"><kbd>gr</kbd></span></div>
+      <div className="lv-row"><span className="lv-desc">Hover docs</span><span className="lv-keys"><kbd>K</kbd></span></div>
+      <div className="lv-row"><span className="lv-desc">Code action</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>ca</kbd></span></div>
+      <div className="lv-row" style={{borderBottom:'none'}}><span className="lv-desc">Format buffer</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>cf</kbd></span></div>
+    </div>
+  </div>
+</div>
+
+<div className="lv-sec"><span className="dot"></span><h3>Core Defaults</h3><span className="bar"></span></div>
+
+<div className="lv-grid">
+
+  <div className="lv-card">
+    <h4>✍️ Motion &amp; Editing</h4>
+    <div className="lv-row"><span className="lv-desc">Down / Up (respects wrap)</span><span className="lv-keys"><kbd>j</kbd><span className="lv-sep">/</span><kbd>k</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Move line / selection ↓↑</span><span className="lv-keys"><kbd>A-j</kbd><span className="lv-sep">/</span><kbd>A-k</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Save file</span><span className="lv-keys"><kbd>C-s</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Clear search highlight</span><span className="lv-keys"><kbd>Esc</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Next / Prev match</span><span className="lv-keys"><kbd>n</kbd><span className="lv-sep">/</span><kbd>N</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Comment below / above</span><span className="lv-keys"><kbd>gco</kbd><span className="lv-sep">/</span><kbd>gcO</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Increment / decrement</span><span className="lv-keys"><kbd>C-a</kbd><span className="lv-sep">/</span><kbd>C-x</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">New file</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>fn</kbd></span></div>
+  </div>
+
+  <div className="lv-card c4">
+    <h4>🪟 Windows</h4>
+    <div className="lv-row"><span className="lv-desc">Focus ← ↓ ↑ →</span><span className="lv-keys"><kbd>C-h</kbd><kbd>C-j</kbd><kbd>C-k</kbd><kbd>C-l</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Height + / −</span><span className="lv-keys"><kbd>C-↑</kbd><span className="lv-sep">/</span><kbd>C-↓</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Width − / +</span><span className="lv-keys"><kbd>C-←</kbd><span className="lv-sep">/</span><kbd>C-→</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Split below</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>-</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Split right</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>|</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Delete window</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>wd</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Toggle zoom</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>wm</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Window hydra (which-key)</span><span className="lv-keys"><kbd>C-w</kbd><kbd>⎵</kbd></span></div>
+  </div>
+
+  <div className="lv-card c2">
+    <h4>📄 Buffers &amp; Tabs</h4>
+    <div className="lv-row"><span className="lv-desc">Prev / Next buffer</span><span className="lv-keys"><kbd>S-h</kbd><span className="lv-sep">/</span><kbd>S-l</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Switch to last buffer</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>`</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Delete buffer</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>bd</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Delete other buffers</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>bo</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Toggle pin</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>bp</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">New tab</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>⇥ ⇥</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Next / Prev tab</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>⇥ ]</kbd><span className="lv-sep">/</span><kbd>[</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Close tab</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>⇥ d</kbd></span></div>
+  </div>
+
+  <div className="lv-card">
+    <h4>🔎 Find &amp; Search</h4>
+    <div className="lv-row"><span className="lv-desc">Find files (root / cwd)</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>ff</kbd><span className="lv-sep">/</span><kbd>fF</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Recent files</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>fr</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Find config file</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>fc</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Projects</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>fp</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Grep (root / cwd)</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>sg</kbd><span className="lv-sep">/</span><kbd>sG</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Grep word under cursor</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>sw</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Search &amp; replace (grug-far)</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>sr</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Help / Keymaps</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>sh</kbd><span className="lv-sep">/</span><kbd>sk</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Resume last picker</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>sR</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Undo tree</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>su</kbd></span></div>
+  </div>
+
+  <div className="lv-card c4">
+    <h4>⚡ Flash (jump)</h4>
+    <div className="lv-row"><span className="lv-desc">Flash — 2 chars + label</span><span className="lv-keys"><kbd>s</kbd><span className="lv-mode">n o x</span></span></div>
+    <div className="lv-row"><span className="lv-desc">Flash Treesitter node</span><span className="lv-keys"><kbd>S</kbd><span className="lv-mode">n o x</span></span></div>
+    <div className="lv-row"><span className="lv-desc">Remote flash</span><span className="lv-keys"><kbd>r</kbd><span className="lv-mode">o</span></span></div>
+    <div className="lv-row"><span className="lv-desc">Treesitter search</span><span className="lv-keys"><kbd>R</kbd><span className="lv-mode">o x</span></span></div>
+    <div className="lv-row"><span className="lv-desc">TS incremental selection</span><span className="lv-keys"><kbd>C-space</kbd></span></div>
+  </div>
+
+  <div className="lv-card c2">
+    <h4>🧠 LSP &amp; Code</h4>
+    <div className="lv-row"><span className="lv-desc">Goto definition</span><span className="lv-keys"><kbd>gd</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">References</span><span className="lv-keys"><kbd>gr</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Implementation / type</span><span className="lv-keys"><kbd>gI</kbd><span className="lv-sep">/</span><kbd>gy</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Hover / signature</span><span className="lv-keys"><kbd>K</kbd><span className="lv-sep">/</span><kbd>gK</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Code action</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>ca</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Rename symbol / file</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>cr</kbd><span className="lv-sep">/</span><kbd>cR</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Format</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>cf</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Organize imports</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>co</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Document symbols</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>ss</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Next / Prev reference</span><span className="lv-keys"><kbd>]]</kbd><span className="lv-sep">/</span><kbd>[[</kbd></span></div>
+  </div>
+
+  <div className="lv-card c5">
+    <h4>⚠️ Diagnostics &amp; Lists</h4>
+    <div className="lv-row"><span className="lv-desc">Line diagnostics</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>cd</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Next / Prev diagnostic</span><span className="lv-keys"><kbd>]d</kbd><span className="lv-sep">/</span><kbd>[d</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Next / Prev error</span><span className="lv-keys"><kbd>]e</kbd><span className="lv-sep">/</span><kbd>[e</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Next / Prev warning</span><span className="lv-keys"><kbd>]w</kbd><span className="lv-sep">/</span><kbd>[w</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Diagnostics (Trouble)</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>xx</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Symbols (Trouble)</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>cs</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Location / quickfix</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>xl</kbd><span className="lv-sep">/</span><kbd>xq</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Prev / Next quickfix</span><span className="lv-keys"><kbd>[q</kbd><span className="lv-sep">/</span><kbd>]q</kbd></span></div>
+  </div>
+
+  <div className="lv-card c3">
+    <h4>🌿 Git</h4>
+    <div className="lv-row"><span className="lv-desc">Open lazygit</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>gg</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Git status</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>gs</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Diff — hunks / origin</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>gd</kbd><span className="lv-sep">/</span><kbd>gD</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Blame line</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>gb</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Log — root / cwd</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>gl</kbd><span className="lv-sep">/</span><kbd>gL</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Current file history</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>gf</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Browse — open / copy URL</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>gB</kbd><span className="lv-sep">/</span><kbd>gY</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Git stash</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>gS</kbd></span></div>
+  </div>
+
+  <div className="lv-card c3">
+    <h4>⭕ Surround, Sessions &amp; Meta</h4>
+    <div className="lv-row"><span className="lv-desc">Add surrounding</span><span className="lv-keys"><kbd>gsa</kbd><span className="lv-mode">n x</span></span></div>
+    <div className="lv-row"><span className="lv-desc">Delete / replace surround</span><span className="lv-keys"><kbd>gsd</kbd><span className="lv-sep">/</span><kbd>gsr</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Restore session (cwd)</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>qs</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Restore last session</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>ql</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Quit all</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>qq</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Open Lazy / Mason</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>l</kbd><span className="lv-sep">/</span><kbd>cm</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Buffer keymaps (which-key)</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>?</kbd></span></div>
+  </div>
+
+</div>
+
+<div className="lv-sec g2"><span className="dot"></span><h3>Toggles — the ⎵u menu</h3><span className="bar"></span></div>
+
+<div className="lv-grid">
+  <div className="lv-card c2">
+    <h4>🎚️ Editor</h4>
+    <div className="lv-row"><span className="lv-desc">Auto-format (global / buffer)</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>uf</kbd><span className="lv-sep">/</span><kbd>uF</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Spelling</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>us</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Line wrap</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>uw</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Line / relative numbers</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>ul</kbd><span className="lv-sep">/</span><kbd>uL</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Diagnostics</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>ud</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Inlay hints</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>uh</kbd></span></div>
+  </div>
+  <div className="lv-card c2">
+    <h4>🎨 Appearance</h4>
+    <div className="lv-row"><span className="lv-desc">Dark background</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>ub</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Conceal level</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>uc</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Zen / zoom mode</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>uz</kbd><span className="lv-sep">/</span><kbd>uZ</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Pick a colorscheme</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>uC</kbd></span></div>
+  </div>
+</div>
+
+<div className="lv-sec g3"><span className="dot"></span><h3>Extras</h3><span className="bar"></span></div>
+
+<p className="lv-note">These only bind if you've enabled the matching extra (<kbd className="ldr">⎵</kbd><kbd>l</kbd> → <code>LazyExtras</code>). Some keys — notably the <code>⎵a</code> AI namespace and <code>⎵cs</code> — are reused across extras and only apply when that specific one is active.</p>
+
+<div className="lv-grid" style={{marginTop:'1rem'}}>
+  <div className="lv-card c3">
+    <h4>🐞 Debug (nvim-dap)</h4>
+    <div className="lv-row"><span className="lv-desc">Toggle breakpoint</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>db</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Run / continue</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>dc</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Step into / out / over</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>di</kbd><span className="lv-sep">/</span><kbd>do</kbd><span className="lv-sep">/</span><kbd>dO</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Toggle DAP UI</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>du</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Terminate</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>dt</kbd></span></div>
+  </div>
+  <div className="lv-card c2">
+    <h4>🧪 Test (neotest)</h4>
+    <div className="lv-row"><span className="lv-desc">Run nearest</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>tr</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Run file</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>tt</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Toggle summary</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>ts</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Show output</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>to</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Debug nearest</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>td</kbd></span></div>
+  </div>
+  <div className="lv-card">
+    <h4>🤖 AI Assistants</h4>
+    <div className="lv-row"><span className="lv-desc">AI menu</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>a</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Toggle / ask assistant</span><span className="lv-keys"><kbd className="ldr">⎵</kbd><kbd>aa</kbd></span></div>
+    <div className="lv-row"><span className="lv-desc">Focus Sidekick</span><span className="lv-keys"><kbd>C-.</kbd></span></div>
+  </div>
+</div>
+
+</div>
+
+*→ Full official list: [lazyvim.org/keymaps](https://www.lazyvim.org/keymaps)*
